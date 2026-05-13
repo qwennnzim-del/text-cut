@@ -14,11 +14,12 @@ interface Props {
   blurIntensity: number;
   aspectRatio: string;
   zoomLevel: number;
+  customFont?: string | null;
 }
 
 export function StudioCanvas({ 
   targetText, theme, highlightStyle, layoutStyle, speed, isPlaying,
-  blurStyle, blurIntensity, aspectRatio, zoomLevel
+  blurStyle, blurIntensity, aspectRatio, zoomLevel, customFont
 }: Props) {
   const [fillerTop, setFillerTop] = useState<string>('');
   const [fillerBottom, setFillerBottom] = useState<string>('');
@@ -182,7 +183,7 @@ export function StudioCanvas({
   );
 
   const FlowingText = ({ className }: { className?: string }) => (
-    <div className="absolute inset-0" ref={containerRef}>
+    <div className="absolute inset-0" ref={containerRef} style={customFont ? { fontFamily: `'${customFont}', sans-serif` } : undefined}>
         <div 
            className="absolute w-[200%] sm:w-[150%] md:w-[125%]" 
            style={{ 
