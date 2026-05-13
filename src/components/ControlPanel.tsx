@@ -25,14 +25,16 @@ interface Props {
   setZoomLevel: (s: number) => void;
   customFont: string | null;
   setCustomFont: (f: string | null) => void;
+  textAnimPreset: string;
+  setTextAnimPreset: (s: any) => void;
 }
 
 const TEMPLATES = [
   { id: 'custom', label: 'Custom / Manual', config: null },
-  { id: 'news_classic', label: '🗞️ The Classic News', config: { theme: 'news', layout: 'newspaper', highlight: 'marker', zoomLevel: 120, blurStyle: 'vignette', speed: 150 } },
-  { id: 'cyber_attack', label: '💻 Cyber Attack', config: { theme: 'cyberpunk', layout: 'digital', highlight: 'neon', zoomLevel: 160, blurStyle: 'none', speed: 60 } },
-  { id: 'cinematic', label: '🎬 Cinematic Focus', config: { theme: 'diary', layout: 'book', highlight: 'red-ink', zoomLevel: 110, blurStyle: 'radial', speed: 250 } },
-  { id: 'minimal_cut', label: '⚡ Minimal Match Cut', config: { theme: 'lorem', layout: 'match-cut', highlight: 'cutout', zoomLevel: 100, blurStyle: 'none', speed: 120 } },
+  { id: 'news_classic', label: '🗞️ The Classic News', config: { theme: 'news', layout: 'newspaper', highlight: 'marker', zoomLevel: 120, blurStyle: 'vignette', speed: 150, textAnimPreset: 'fade' } },
+  { id: 'cyber_attack', label: '💻 Cyber Attack', config: { theme: 'cyberpunk', layout: 'digital', highlight: 'neon', zoomLevel: 160, blurStyle: 'none', speed: 60, textAnimPreset: 'zoom' } },
+  { id: 'cinematic', label: '🎬 Cinematic Focus', config: { theme: 'diary', layout: 'book', highlight: 'red-ink', zoomLevel: 110, blurStyle: 'radial', speed: 250, textAnimPreset: 'slide' } },
+  { id: 'minimal_cut', label: '⚡ Minimal Match Cut', config: { theme: 'lorem', layout: 'match-cut', highlight: 'cutout', zoomLevel: 100, blurStyle: 'none', speed: 120, textAnimPreset: 'random' } },
 ];
 
 interface Option {
@@ -107,6 +109,7 @@ export function ControlPanel(props: Props) {
       props.setZoomLevel(template.config.zoomLevel);
       props.setBlurStyle(template.config.blurStyle as BlurStyle);
       props.setSpeed(template.config.speed);
+      props.setTextAnimPreset(template.config.textAnimPreset);
     }
   };
 
@@ -245,6 +248,25 @@ export function ControlPanel(props: Props) {
                { value: 'red-ink', label: 'Red Ink Wavy' },
                { value: 'cutout', label: 'Ransom Cutout Card' },
                { value: 'neon', label: 'Cyber Neon Glow' }
+             ]}
+           />
+         </section>
+
+         {/* Text Animation Preset */}
+         <section>
+           <label className="text-[10px] uppercase tracking-[0.25em] font-extrabold text-zinc-400 mb-3 block flex items-center gap-2">
+             <PlayCircle size={12} className="text-purple-400" />
+             Text Animation Preset
+           </label>
+           <CustomSelect 
+             value={props.textAnimPreset}
+             onChange={(v) => props.setTextAnimPreset(v)}
+             options={[
+               { value: 'none', label: 'None (Static)' },
+               { value: 'fade', label: 'Fade In' },
+               { value: 'slide', label: 'Slide In Up' },
+               { value: 'zoom', label: 'Zoom In' },
+               { value: 'random', label: 'Random Mix' }
              ]}
            />
          </section>

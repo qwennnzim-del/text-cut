@@ -15,11 +15,12 @@ interface Props {
   aspectRatio: string;
   zoomLevel: number;
   customFont?: string | null;
+  textAnimPreset: string;
 }
 
 export function StudioCanvas({ 
   targetText, theme, highlightStyle, layoutStyle, speed, isPlaying,
-  blurStyle, blurIntensity, aspectRatio, zoomLevel, customFont
+  blurStyle, blurIntensity, aspectRatio, zoomLevel, customFont, textAnimPreset
 }: Props) {
   const [fillerTop, setFillerTop] = useState<string>('');
   const [fillerBottom, setFillerBottom] = useState<string>('');
@@ -182,29 +183,60 @@ export function StudioCanvas({
       </span>
   );
 
-  const FlowingText = ({ className }: { className?: string }) => (
-    <div className="absolute inset-0" ref={containerRef} style={customFont ? { fontFamily: `'${customFont}', sans-serif` } : undefined}>
-        <div 
-           className="absolute w-[200%] sm:w-[150%] md:w-[125%]" 
-           style={{ 
-               left: '50%', top: '50%', 
-               transform: `translate(calc(-${offsetX}px), calc(-${offsetY}px))`, 
-               willChange: 'transform' 
-           }}
-        >
-            <p className={cn("relative pointer-events-none text-justify", className)}>
-                {fillerTop}{' '}
-                <span ref={targetRef} className={cn(
-                   "transition-all duration-300 relative inline-block align-baseline z-20 mx-1",
-                   getHighlightClass()
-                )}>
-                  {targetText}
-                </span>
-                {' '}{fillerBottom}
-            </p>
-        </div>
-    </div>
-  );
+  const getAnimProps = () => {
+    switch (textAnimPreset) {
+      case 'fade':
+        return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.8, ease: "easeOut" } };
+      case 'slide':
+        return { initial: { opacity: 0, y: 30 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, type: 'spring', bounce: 0.4 } };
+      case 'zoom':
+        return { initial: { opacity: 0, scale: 0.2 }, animate: { opacity: 1, scale: 1 }, transition: { duration: 0.6, type: 'spring', bounce: 0.5 } };
+      case 'random':
+        const randX = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 50 + 20);
+        const randY = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 50 + 20);
+        const randRot = (Math.random() - 0.5) * 60;
+        return { 
+          initial: { opacity: 0, x: randX, y: randY, rotate: randRot, scale: Math.random() * 0.5 + 0.5 }, 
+          animate: { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1 }, 
+          transition: { duration: 0.7, type: 'spring', bounce: 0.4 } 
+        };
+      default:
+        return {};
+    }
+  };
+
+  const FlowingText = ({ className }: { className?: string }) => {
+    const animProps = getAnimProps();
+    
+    return (
+      <div className="absolute inset-0" ref={containerRef} style={customFont ? { fontFamily: `'${customFont}', sans-serif` } : undefined}>
+          <div 
+             className="absolute w-[200%] sm:w-[150%] md:w-[125%]" 
+             style={{ 
+                 left: '50%', top: '50%', 
+                 transform: `translate(calc(-${offsetX}px), calc(-${offsetY}px))`, 
+                 willChange: 'transform' 
+             }}
+          >
+              <p className={cn("relative pointer-events-none text-justify", className)}>
+                  {fillerTop}{' '}
+                  <motion.span 
+                     key={activeLayout + textAnimPreset + targetText + activeHighlight}
+                     ref={targetRef as any} 
+                     className={cn(
+                       "relative inline-block align-baseline z-20 mx-1",
+                       getHighlightClass()
+                     )}
+                     {...animProps}
+                  >
+                    {targetText}
+                  </motion.span>
+                  {' '}{fillerBottom}
+              </p>
+          </div>
+      </div>
+    );
+  };
 
   return (
     <div 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Download, X, Info, AlertTriangle, Maximize, Minimize } from 'lucide-react';
+import { Play, Pause, Download, X, Info, AlertTriangle, Maximize, Minimize, Link as LinkIcon } from 'lucide-react';
 import { StudioCanvas } from './components/StudioCanvas';
 import { ControlPanel } from './components/ControlPanel';
 
@@ -21,6 +21,7 @@ export default function App() {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('9/16');
   const [zoomLevel, setZoomLevel] = useState(120);
   const [customFont, setCustomFont] = useState<string | null>(null);
+  const [textAnimPreset, setTextAnimPreset] = useState<'none' | 'fade' | 'slide' | 'zoom' | 'random'>('none');
   
   const [exportRes, setExportRes] = useState<'720p' | '1080p' | '4k'>('1080p');
   const [exportFormat, setExportFormat] = useState<'mp4' | 'webm'>('mp4');
@@ -29,6 +30,18 @@ export default function App() {
   const canvasContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if(params.has('text')) setTargetText(decodeURIComponent(params.get('text')!));
+    if(params.has('theme')) setTheme(params.get('theme') as any);
+    if(params.has('hl')) setHighlightStyle(params.get('hl') as any);
+    if(params.has('layout')) setLayoutStyle(params.get('layout') as any);
+    if(params.has('speed')) setSpeed(Number(params.get('speed')));
+    if(params.has('blur')) setBlurStyle(params.get('blur') as any);
+    if(params.has('blurInt')) setBlurIntensity(Number(params.get('blurInt')));
+    if(params.has('ar')) setAspectRatio(params.get('ar') as any);
+    if(params.has('zoom')) setZoomLevel(Number(params.get('zoom')));
+    if(params.has('anim')) setTextAnimPreset(params.get('anim') as any);
+
     const handleFullscreenChange = () => {
         setIsFullscreenMode(!!document.fullscreenElement || !!(document as any).webkitFullscreenElement);
     };
@@ -186,6 +199,7 @@ export default function App() {
            aspectRatio={aspectRatio} setAspectRatio={setAspectRatio}
            zoomLevel={zoomLevel} setZoomLevel={setZoomLevel}
            customFont={customFont} setCustomFont={setCustomFont}
+           textAnimPreset={textAnimPreset} setTextAnimPreset={setTextAnimPreset}
         />
       {/* Main Workspace */}
       <main className="flex-1 flex flex-col h-full relative bg-[#050505] min-h-0 overflow-hidden">
@@ -247,6 +261,7 @@ export default function App() {
               aspectRatio={aspectRatio}
               zoomLevel={zoomLevel}
               customFont={customFont}
+              textAnimPreset={textAnimPreset}
             />
          </div>
       </main>
@@ -345,12 +360,14 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <button 
-                 onClick={() => setModalState(null)}
-                 className="w-full px-4 py-2 bg-zinc-800 text-white rounded font-medium text-sm tracking-wide hover:bg-zinc-700 transition-colors mt-2"
-              >
-                 Tutup
-              </button>
+              <div className="flex flex-col gap-2 mt-2">
+                <button 
+                   onClick={() => setModalState(null)}
+                   className="w-full px-4 py-2 bg-zinc-800 text-white rounded font-medium text-sm tracking-wide hover:bg-zinc-700 transition-colors"
+                >
+                   Tutup
+                </button>
+              </div>
             )}
           </div>
         </div>
