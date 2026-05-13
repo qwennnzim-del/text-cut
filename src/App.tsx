@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Play, Pause, Download, X, Info, AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Play, Pause, Download, X, Info, AlertTriangle, Maximize, Minimize } from 'lucide-react';
 import { StudioCanvas } from './components/StudioCanvas';
 import { ControlPanel } from './components/ControlPanel';
 
@@ -24,6 +24,42 @@ export default function App() {
   
   const [exportRes, setExportRes] = useState<'720p' | '1080p' | '4k'>('1080p');
   const [exportFormat, setExportFormat] = useState<'mp4' | 'webm'>('mp4');
+
+  const [isFullscreenMode, setIsFullscreenMode] = useState(false);
+  const canvasContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+        setIsFullscreenMode(!!document.fullscreenElement || !!(document as any).webkitFullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    return () => {
+        document.removeEventListener('fullscreenchange', handleFullscreenChange);
+        document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = () => {
+    const el = canvasContainerRef.current;
+    if (!el) return;
+
+    if (!isFullscreenMode) {
+        if (el.requestFullscreen) {
+            el.requestFullscreen().catch(e => console.log(e));
+        } else if ((el as any).webkitRequestFullscreen) {
+            (el as any).webkitRequestFullscreen();
+        }
+        setIsFullscreenMode(true);
+    } else {
+        if (document.exitFullscreen && document.fullscreenElement) {
+            document.exitFullscreen().catch(e => console.log(e));
+        } else if ((document as any).webkitExitFullscreen && (document as any).webkitFullscreenElement) {
+            (document as any).webkitExitFullscreen();
+        }
+        setIsFullscreenMode(false);
+    }
+  };
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -163,6 +199,13 @@ export default function App() {
             </div>
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                <button
+                 onClick={toggleFullscreen}
+                 className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors border bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700"
+               >
+                 {isFullscreenMode ? <Minimize size={14} /> : <Maximize size={14} />}
+                 <span className="hidden sm:inline">{isFullscreenMode ? 'Tutup' : 'Layar Penuh'}</span>
+               </button>
+               <button
                  onClick={() => setIsPlaying(!isPlaying)}
                  className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-colors border ${isPlaying ? 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700' : 'bg-white border-white text-black hover:bg-zinc-200'}`}
                >
@@ -179,7 +222,18 @@ export default function App() {
             </div>
          </header>
 
-         <div className="flex-1 relative flex items-center justify-center overflow-hidden p-2 sm:p-6 min-h-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px] sm:bg-[size:24px_24px]">
+         <div 
+           ref={canvasContainerRef}
+           className={`flex-1 relative flex items-center justify-center overflow-hidden p-2 sm:p-6 min-h-0 bg-[#050505] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:16px_16px] sm:bg-[size:24px_24px] ${isFullscreenMode ? 'fixed inset-0 z-50 !bg-[#050505]' : ''}`}
+         >
+            {isFullscreenMode && (
+              <button 
+                onClick={toggleFullscreen}
+                className="absolute top-4 right-4 z-[60] p-3 bg-black/60 hover:bg-black text-white/50 hover:text-white rounded-full transition-all backdrop-blur"
+              >
+                <Minimize size={20} />
+              </button>
+            )}
             <div className="absolute inset-0 pointer-events-none"></div>
             <StudioCanvas
               targetText={targetText}
